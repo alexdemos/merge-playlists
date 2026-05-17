@@ -1,50 +1,92 @@
 @if (!authService.isLoggedIn()) {
-  <!-- This button only shows if the user is logged out -->
   <div class="auth-container">
     <button (click)="login()">Log In with Spotify</button>
   </div>
 } @else {
-  <!-- This button only shows if the user is logged in -->
   <div class="auth-container">
     <button (click)="logout()">Log Out</button>
   </div>
   
-<!-- Container for Pinned Playlists -->
-@if (selectedPlaylists.length > 0) {
+  @if (selectedPlaylists.length > 0) {
     <div class="result">
-    <form [formGroup]="homeForm" class="pinned-playlists-list">
-      @for (playlist of selectedPlaylists; track playlist.id) {
-        <div class="playlist-card">
-          <button class="listing" (click)="pinPlaylist(playlist)">
-            <app-playlist-tile class="pinned" [playlist]="playlist"></app-playlist-tile>
-          </button>
-          <div class="ratio-container">
-            <p>Ratio</p>
-            <input type="number" (click)="$event.stopPropagation()" [formControlName]="playlist.id"/>
+      <form [formGroup]="homeForm" class="pinned-playlists-list">
+        @for (playlist of selectedPlaylists; track playlist.id) {
+          <div class="playlist-card">
+            <button class="listing" (click)="pinPlaylist(playlist)">
+              <app-playlist-tile class="pinned" [playlist]="playlist"></app-playlist-tile>
+            </button>
+            <div class="ratio-container">
+              <p>Ratio</p>
+              <input type="number" (click)="$event.stopPropagation()" [formControlName]="playlist.id" min=1/>
+            </div>
           </div>
-        </div>
-      } 
-    </form>
-  </div>
-  <div class="control-panel">
-        <button (click)="play()">Play</button>
+        } 
+      </form>
     </div>
-}
 
+    <!-- NEW: Full Control Panel with Skip Buttons -->
+    <div class="control-panel">
+      <div class="playback-bar">
+        <div class="select-wrapper">
+          <select [value]="selectedDevice?.id" (change)="onDeviceChange($event)">
+            <option value="" disabled [selected]="!selectedDevice">Select Device</option>
+            @for (device of devices; track device.id) {
+              <option [value]="device.id">
+                {{ device.name }} {{ device.is_active ? '●' : '' }}
+              </option>
+            }
+          </select>
+        </div>
 
-<form>
-  <input type="text" placeholder="Search Playlists" #filter />
+        <button class="refresh-btn" type="button" (click)="loadDevices(true)" title="Refresh Devices">
+          <span class="refresh-icon">🔄</span>
+        </button>
+
+        <!-- Previous Button -->
+        <button class="skip-btn" (click)="prevTrack()" [disabled]="!getActiveDevice()" title="Previous Track">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="skip-icon">
+            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+          </svg>
+        </button>
+
+        <!-- Play Button -->
+        <button class="play-btn" (click)="play()" [disabled]="!selectedDevice" title="Play Blended Playlist">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="play-icon">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </button>
+
+        <!-- Pause Button -->
+        <button class="pause-btn" (click)="pause()" [disabled]="!getActiveDevice()" title="Pause Active Device">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pause-icon">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+          </svg>
+        </button>
+
+        <!-- Next Button -->
+        <button class="skip-btn" (click)="nextTrack()" [disabled]="!getActiveDevice()" title="Next Track">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="skip-icon">
+            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+          </svg>
+        </button>
+
+      </div>
+    </div>
+  }
+
+  <!-- Added (submit) handler to block the browser's default page reload behavior -->
+<form (submit)="$event.preventDefault()">
+  <input type="text" placeholder="Search Playlists" #filter (keyup.enter)="searchPlaylists(filter.value)" />
   <button class="primary" type="button" (click)="searchPlaylists(filter.value)">Search</button>
 </form>
 
-<!-- Container for Search Result Grid -->
-<div class="results-grid">
-  @for (playlist of searchedPlaylists; track playlist.id) {
-    @if (!playlist.isSelected) {
-      <button class="listing" (click)="pinPlaylist(playlist)">
-        <app-playlist-tile class="listing" [playlist]="playlist"></app-playlist-tile>
-      </button>
-    }
-  } 
-</div>
+  <div class="results-grid">
+    @for (playlist of searchedPlaylists; track playlist.id) {
+      @if (!playlist.isSelected) {
+        <button class="listing" (click)="pinPlaylist(playlist)">
+          <app-playlist-tile class="listing" [playlist]="playlist"></app-playlist-tile>
+        </button>
+      }
+    } 
+  </div>
 }

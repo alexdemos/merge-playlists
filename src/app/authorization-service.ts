@@ -142,6 +142,7 @@ export class SpotifyAuthService {
     localStorage.removeItem('spotify_access_token');
     localStorage.removeItem('spotify_refresh_token');
     localStorage.removeItem('spotify_token_expires_at');
+    localStorage.removeItem('spotify_cached_devices');
     
     // Notify your components that the user is officially out
     this.isLoggedIn.set(false);

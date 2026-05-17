@@ -1,5 +1,4 @@
 /* --- GLOBAL STYLING / THEME WRAPPER --- */
-/* Add background-color: #121212 to your main app body wrapper if possible */
 h1 {
   color: #FFFFFF;
   font-weight: 800;
@@ -16,22 +15,23 @@ button.listing {
   display: block;
 }
 
-/* Primary Spotify Pills (Connect / Play / Search) */
+/* Primary Spotify Pills (Log in/out, Search) */
+/* Kept simple: any button that isn't a listing gets this default pill styling */
 button:not(.listing) {
-  background-color: #1DB954; /* Spotify Green */
+  background-color: #1DB954; 
   color: #000000;
   font-weight: 700;
   font-size: 14px;
   padding: 12px 24px;
   border: none;
-  border-radius: 50px; /* Pill shape */
+  border-radius: 50px; 
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease;
   margin-right: 12px;
 }
 
 button:not(.listing):hover {
-  background-color: #1ed760; /* Lighter bright green on hover */
+  background-color: #1ed760; 
   transform: scale(1.04);
 }
 
@@ -39,7 +39,195 @@ button:not(.listing):active {
   transform: scale(0.98);
 }
 
-/* --- SEARCH BAR BAR --- */
+/* --- PLAYBACK CONTROL BAR (Single Line Panel) --- */
+.control-panel {
+  display: flex;
+  justify-content: center;
+  margin: 32px 0;
+  width: 100%;
+}
+
+.playback-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background-color: #181818; 
+  padding: 10px 20px;
+  border-radius: 50px; 
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* Device Dropdown */
+.select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.select-wrapper select {
+  background-color: #282828;
+  color: #ffffff;
+  border: 1px solid #3e3e3e;
+  padding: 8px 32px 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px; /* Slightly square to contrast with play buttons */
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  min-width: 160px;
+}
+
+.select-wrapper select:focus {
+  outline: none;
+  border-color: #1DB954;
+}
+
+.select-wrapper::after {
+  content: '▼';
+  font-size: 9px;
+  color: #b3b3b3;
+  position: absolute;
+  right: 12px;
+  pointer-events: none;
+}
+
+/* 
+  NEW: DISTINCT REFRESH BUTTON
+  Uses explicit scoping (.playback-bar button) to safely overwrite the default green pill styles 
+*/
+.playback-bar button.refresh-btn {
+  background-color: transparent;
+  color: #b3b3b3;
+  border: 1px solid #535353;
+  border-radius: 6px;
+  padding: 6px 12px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.playback-bar button.refresh-btn:hover {
+  color: #ffffff;
+  border-color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.05);
+  transform: none; 
+}
+
+/* Transport Controls Wrapper (Play, Pause, Skip) */
+.transport-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-left: 1px solid #333333;
+  padding-left: 16px;
+}
+
+/* Skip Buttons (Next/Prev) */
+.playback-bar button.skip-btn {
+  background-color: transparent;
+  color: #b3b3b3;
+  border: none;
+  border-radius: 0;
+  padding: 4px;
+  margin: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.playback-bar button.skip-btn:hover:not(:disabled) {
+  color: #ffffff;
+  background-color: transparent;
+  transform: scale(1.1);
+}
+
+.playback-bar button.skip-btn:disabled {
+  color: #535353;
+  cursor: not-allowed;
+}
+
+.skip-icon {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+/* Play Button */
+.playback-bar button.play-btn {
+  background-color: #ffffff; /* White to match modern Spotify desktop UI */
+  color: #000000;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: transform 0.2s ease;
+}
+
+.playback-bar button.play-btn:hover:not(:disabled) {
+  transform: scale(1.06);
+  background-color: #ffffff;
+}
+
+.playback-bar button.play-btn:disabled {
+  background-color: #535353;
+  color: #b3b3b3;
+  cursor: not-allowed;
+}
+
+.play-icon {
+  width: 20px;
+  height: 20px;
+  margin-left: 2px;
+  fill: currentColor;
+}
+
+/* Pause Button */
+.playback-bar button.pause-btn {
+  background-color: #1DB954; /* Lights up green so you know it's active */
+  color: #000000;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.playback-bar button.pause-btn:hover:not(:disabled) {
+  background-color: #1ed760;
+  transform: scale(1.06);
+}
+
+.playback-bar button.pause-btn:disabled {
+  background-color: #181818;
+  color: #535353;
+  cursor: not-allowed;
+}
+
+.pause-icon {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+/* --- SEARCH BAR --- */
 form {
   display: flex;
   gap: 12px;
@@ -49,7 +237,7 @@ form {
 
 input[type="text"] {
   flex: 1;
-  background-color: #242424; /* Dark gray input background */
+  background-color: #242424; 
   border: 1px solid transparent;
   border-radius: 4px;
   padding: 12px 16px;
@@ -60,13 +248,14 @@ input[type="text"] {
 
 input[type="text"]:focus {
   outline: none;
-  border-color: #1DB954; /* Highlight input with green border on focus */
+  border-color: #1DB954; 
 }
 
 input[type="text"]::placeholder {
   color: #A7A7A7;
 }
 
+/* --- PINNED PLAYLIST TRACK WRAPPER --- */
 .pinned-playlists-list {
   display: inline-flex;
   flex-direction: row;
@@ -74,18 +263,14 @@ input[type="text"]::placeholder {
   gap: 24px;
   align-items: flex-start;
   margin-bottom: 48px;
-  
-  /* Color changes for contrast */
-  background-color: #1e1e1e;            /* Lighter charcoal gray color */
-  border: 1px solid rgba(255,255,255,0.05); /* Very faint border highlight */
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); /* Drop shadow for separation */
-  
+  background-color: #1e1e1e;            
+  border: 1px solid rgba(255,255,255,0.05); 
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); 
   padding: 24px;
   border-radius: 8px;
   max-width: 100%; 
   box-sizing: border-box;
 }
-
 
 .playlist-card {
   display: flex;
@@ -97,7 +282,7 @@ input[type="text"]::placeholder {
 .ratio-container {
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* Left align to match text style */
+  align-items: flex-start; 
   margin-top: 12px;
   width: 100%;
 }
@@ -108,7 +293,7 @@ input[type="text"]::placeholder {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  color: #A7A7A7; /* Clean muted text color */
+  color: #A7A7A7; 
 }
 
 .ratio-container input[type="number"] {
@@ -118,7 +303,7 @@ input[type="text"]::placeholder {
   border: 1px solid #3E3E3E;
   border-radius: 4px;
   padding: 8px;
-  color: #1DB954; /* Green numbers! */
+  color: #1DB954; 
   font-weight: 700;
   font-size: 14px;
   text-align: center;
@@ -140,10 +325,5 @@ input[type="text"]::placeholder {
 }
 
 .auth-container {
-  margin-bottom: 15px; /* Adds space below the log in / log out buttons */
-}
-
-.control-panel button {
-  display: block;      /* Forces buttons inside the control panel to stack vertically */
-  margin-bottom: 10px; /* Adds space below the play button if the delete button shows up */
+  margin-bottom: 15px;
 }
