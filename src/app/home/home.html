@@ -9,6 +9,12 @@
   
   @if (selectedPlaylists.length > 0) {
     <div class="result">
+      <div style="margin-bottom: 12px; display: flex; gap: 10px;">
+        <button class="save-mix-btn" type="button" (click)="saveCurrentPlaylist()" title="Export Blend Copy">
+          💾 Save Mix to Spotify
+        </button>
+      </div>
+
       <form [formGroup]="homeForm" class="pinned-playlists-list">
         @for (playlist of selectedPlaylists; track playlist.id) {
           <div class="playlist-card">
@@ -24,9 +30,9 @@
       </form>
     </div>
 
-    <!-- NEW: Full Control Panel with Skip Buttons -->
     <div class="control-panel">
       <div class="playback-bar">
+        
         <div class="select-wrapper">
           <select [value]="selectedDevice?.id" (change)="onDeviceChange($event)">
             <option value="" disabled [selected]="!selectedDevice">Select Device</option>
@@ -39,46 +45,43 @@
         </div>
 
         <button class="refresh-btn" type="button" (click)="loadDevices(true)" title="Refresh Devices">
-          <span class="refresh-icon">🔄</span>
+          <span>↻</span> Sync
         </button>
 
-        <!-- Previous Button -->
-        <button class="skip-btn" (click)="prevTrack()" [disabled]="!getActiveDevice()" title="Previous Track">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="skip-icon">
-            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
-          </svg>
-        </button>
+        <div class="transport-controls">
+          <button class="skip-btn" (click)="prevTrack()" [disabled]="!getActiveDevice()" title="Previous Track">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="skip-icon">
+              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+            </svg>
+          </button>
 
-        <!-- Play Button -->
-        <button class="play-btn" (click)="play()" [disabled]="!selectedDevice" title="Play Blended Playlist">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="play-icon">
-            <path d="M8 5v14l11-7z"/>
-          </svg>
-        </button>
+          <button class="play-btn" (click)="play()" [disabled]="!selectedDevice" title="Play Blended Playlist">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="play-icon">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </button>
 
-        <!-- Pause Button -->
-        <button class="pause-btn" (click)="pause()" [disabled]="!getActiveDevice()" title="Pause Active Device">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pause-icon">
-            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-          </svg>
-        </button>
+          <button class="pause-btn" (click)="pause()" [disabled]="!getActiveDevice()" title="Pause Active Device">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="pause-icon">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+            </svg>
+          </button>
 
-        <!-- Next Button -->
-        <button class="skip-btn" (click)="nextTrack()" [disabled]="!getActiveDevice()" title="Next Track">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="skip-icon">
-            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
-          </svg>
-        </button>
+          <button class="skip-btn" (click)="nextTrack()" [disabled]="!getActiveDevice()" title="Next Track">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="skip-icon">
+              <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+            </svg>
+          </button>
+        </div>
 
       </div>
     </div>
   }
 
-  <!-- Added (submit) handler to block the browser's default page reload behavior -->
-<form (submit)="$event.preventDefault()">
-  <input type="text" placeholder="Search Playlists" #filter (keyup.enter)="searchPlaylists(filter.value)" />
-  <button class="primary" type="button" (click)="searchPlaylists(filter.value)">Search</button>
-</form>
+  <div class="search-container">
+    <input type="text" placeholder="Search Playlists" #filter (keyup.enter)="searchPlaylists(filter.value)" />
+    <button class="primary" type="button" (click)="searchPlaylists(filter.value)">Search</button>
+  </div>
 
   <div class="results-grid">
     @for (playlist of searchedPlaylists; track playlist.id) {

@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { Playlist } from './models/playlist';
 import { PlaylistItemResponse } from './models/playlistItemResponse';
@@ -10,12 +10,12 @@ import { SpotifyAuthService } from './authorization-service';
   providedIn: 'root'
 })
 export class SpotifyService {
+  private http = inject(HttpClient);
   private authService = inject(SpotifyAuthService);
+  
   spotifyRoot = "https://api.spotify.com/v1";
   searchUrl = `${this.spotifyRoot}/search`;
   playlistUrl = `${this.spotifyRoot}/playlists`;
-  
-  // Playback Control Endpoints
   playUrl = `${this.spotifyRoot}/me/player/play`;
   pauseUrl = `${this.spotifyRoot}/me/player/pause`;
   nextUrl = `${this.spotifyRoot}/me/player/next`;
@@ -24,25 +24,18 @@ export class SpotifyService {
   deviceUrl = `${this.spotifyRoot}/me/player/devices`;
   transferUrl = `${this.spotifyRoot}/me/player`;
 
-  constructor(private http: HttpClient) { }
-  
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   async seachPlaylists(searchTerm: string): Promise<any> {
-    const params = new HttpParams()
-      .set("q", searchTerm)
-      .set("type", "playlist");
+    const params = new HttpParams().set("q", searchTerm).set("type", "playlist");
     return await firstValueFrom(this.http.get(this.searchUrl, { params }));
   }
   
   async getPlaylistSongs(playlist: Playlist): Promise<Track[]> {
-    let itemsUrl = this.playlistUrl + `/${playlist.id}/tracks`;
-    const queryParams = new HttpParams()
-      .set('fields', 'items(track(name,uri)),next')
-      .set('limit', '50');
-      
+    let itemsUrl = this.playlistUrl + `/${playlist.id}/items`;
+    const queryParams = new HttpParams().set('fields', 'items(track(name,uri)),next').set('limit', '50');
     let tracks: Track[] = [];
     let count = 0;
 
@@ -55,14 +48,12 @@ export class SpotifyService {
     return tracks; 
   }
 
-  async startPlayback(tracks: Track[], deviceId?: string | null) {
-    const uris = tracks.map(track => track.uri);
-    const body = { uris: uris };
+  // Enhanced Playback Execution to support Context URIs (Playlists)
+  async startPlayback(tracks: Track[], deviceId?: string | null, contextUri?: string | null) {
     let url = this.playUrl;
-    
     if (deviceId) {
       await this.transferPlayback(deviceId);
-      await this.delay(500); // Wait for hardware to wake up
+      await this.delay(500); 
       url += `?device_id=${deviceId}`;
     }
 
@@ -73,10 +64,11 @@ export class SpotifyService {
       console.warn('Shuffle state update skipped:', err);
     }
 
+    // Play via Playlist Context URI if available; otherwise drop back to an explicit array list
+    const body = contextUri ? { context_uri: contextUri } : { uris: tracks.map(t => t.uri) };
     await firstValueFrom(this.http.put(url, body, {}));
   }
 
-  // NEW: Resumes playback without sending a new queue of URIs
   async resumePlayback(deviceId?: string | null) {
     let url = this.playUrl;
     if (deviceId) {
@@ -84,7 +76,6 @@ export class SpotifyService {
       await this.delay(500);
       url += `?device_id=${deviceId}`;
     }
-    // Sending an empty object {} tells Spotify to just resume the existing context
     await firstValueFrom(this.http.put(url, {}, {}));
   }
 
@@ -94,14 +85,12 @@ export class SpotifyService {
     await firstValueFrom(this.http.put(url, null, { responseType: 'text' }));
   }
 
-  // NEW: Skip to next track
   async skipNext(deviceId?: string | null) {
     let url = this.nextUrl;
     if (deviceId) url += `?device_id=${deviceId}`;
     await firstValueFrom(this.http.post(url, null, { responseType: 'text' }));
   }
 
-  // NEW: Skip to previous track
   async skipPrevious(deviceId?: string | null) {
     let url = this.prevUrl;
     if (deviceId) url += `?device_id=${deviceId}`;
@@ -125,5 +114,43 @@ export class SpotifyService {
     const data = await firstValueFrom(this.http.get(this.deviceUrl));
     localStorage.setItem('spotify_cached_devices', JSON.stringify(data));
     return data;
+  }
+
+  // --- PLAYLIST CREATION & POPULATION SERVICES ---
+  
+  async getCurrentUserId(): Promise<string> {
+    const data: any = await firstValueFrom(this.http.get(`${this.spotifyRoot}/me`));
+    return data.id;
+  }
+
+  async findUserPlaylistByName(name: string): Promise<string | null> {
+    let url = `${this.spotifyRoot}/me/playlists?limit=50`;
+    while (url) {
+      const data: any = await firstValueFrom(this.http.get(url));
+      const found = data.items.find((p: any) => p.name === name);
+      if (found) return found.id;
+      url = data.next;
+    }
+    return null;
+  }
+
+  async createPlaylist(userId: string, name: string, description: string): Promise<any> {
+    const body = { name, description, public: false };
+    return await firstValueFrom(this.http.post(`${this.spotifyRoot}/users/${userId}/playlists`, body));
+  }
+
+  // Replaces all current elements inside a playlist in chunks of 100 items max
+  async overwritePlaylistTracks(playlistId: string, tracks: Track[]) {
+    const uris = tracks.map(t => t.uri);
+    const firstChunk = uris.slice(0, 100);
+    
+    // First chunk uses PUT to completely drop old tracks and write fresh replacements
+    await firstValueFrom(this.http.put(`${this.spotifyRoot}/playlists/${playlistId}/items`, { uris: firstChunk }));
+
+    // Remaining tracks are appended in sequential chunks using POST
+    for (let i = 100; i < uris.length; i += 100) {
+      const nextChunk = uris.slice(i, i + 100);
+      await firstValueFrom(this.http.post(`${this.spotifyRoot}/playlists/${playlistId}/items`, { uris: nextChunk }));
+    }
   }
 }

@@ -27,8 +27,8 @@ export class Home implements OnInit {
   devices: SpotifyDevice[] = [];
   selectedDevice: SpotifyDevice | null = null;
   
-  // NEW: State flag to track if we need to regenerate the queue
   playlistConfigChanged = true; 
+  CACHE_PLAYLIST_NAME = "My Playlist Blender Cache";
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
@@ -36,8 +36,6 @@ export class Home implements OnInit {
       this.authService.isLoggedIn.set(hasToken);
       if (hasToken) this.loadDevices();
     }
-
-    // Reactively watch for ratio changes. If a user types a new ratio, flag it for generation.
     this.homeForm.valueChanges.subscribe(() => {
       this.playlistConfigChanged = true;
     });
@@ -76,9 +74,7 @@ export class Home implements OnInit {
   }  
 
   pinPlaylist(playlist: Playlist) {
-    // If they add or remove a playlist, we must flag it for generation
     this.playlistConfigChanged = true; 
-
     if (!this.selectedPlaylists.includes(playlist)) {
       if (this.selectedPlaylists.length < 5) {
         this.selectedPlaylists.push(playlist);
@@ -114,6 +110,16 @@ export class Home implements OnInit {
     return this.devices.find(d => d.is_active) || null;
   }
 
+  getMergedTracks(): Promise<Track[]> {
+    const ratios = this.homeForm.value as Record<string, any>;
+    this.selectedPlaylists.forEach(playlist => {
+      playlist.ratio = Math.max(ratios[playlist.id], 1);
+    });
+    return this.setPlaylistSongs().then(() => {
+      return this.mergeService.mergePlaylists(this.selectedPlaylists);
+    });
+  }
+
   async play() {
     if (!this.selectedDevice) {
       window.alert("Please select a device to play the music on!");
@@ -121,38 +127,82 @@ export class Home implements OnInit {
     }
 
     const deviceId = this.selectedDevice.id;
-
-    // Shift active flags immediately for UI responsiveness
     this.devices.forEach(d => d.is_active = false);
     this.selectedDevice.is_active = true;
 
-    // If ratios or selected playlists have changed, generate a NEW queue
     if (this.playlistConfigChanged) {
-      const userConfirmed = window.confirm("This will generate a new blended queue. Proceed?");
-      if (!userConfirmed) return;
-
-      const ratios = this.homeForm.value as Record<string, any>;
-      this.selectedPlaylists.forEach(playlist => {
-        playlist.ratio = Math.max(ratios[playlist.id], 1);
-      });
-
-      await this.setPlaylistSongs();
-      let mergedTracks: Track[] = this.mergeService.mergePlaylists(this.selectedPlaylists);
-      let firstHundred = mergedTracks.slice(0, 100);
+      const mergedTracks = await this.getMergedTracks();
       
-      await this.spotifyService.startPlayback(firstHundred, deviceId);
+      if (mergedTracks.length === 0) {
+        window.alert("No songs found to blend!");
+        return;
+      }
+
+      // If greater than 100 tracks, trigger the streamlined warning prompt
+      if (mergedTracks.length > 100) {
+        const message = 
+          `This large mix (${mergedTracks.length} songs) requires a helper playlist.\n\n` +
+          `• It will be saved as "${this.CACHE_PLAYLIST_NAME}".\n` +
+          `• Future big mixes will overwrite this playlist.\n` +
+          `• Click "Save Mix to Spotify" later if you want a permanent copy.\n\n` +
+          `Proceed with playback?`;
+
+        const userConfirmed = window.confirm(message);
+        if (!userConfirmed) return;
+
+        try {
+          const userId = await this.spotifyService.getCurrentUserId();
+          let playlistId = await this.spotifyService.findUserPlaylistByName(this.CACHE_PLAYLIST_NAME);
+          
+          if (!playlistId) {
+            const newPlaylist = await this.spotifyService.createPlaylist(userId, this.CACHE_PLAYLIST_NAME, "Automated blending cache track area.");
+            playlistId = newPlaylist.id;
+          }
+          
+          await this.spotifyService.overwritePlaylistTracks(playlistId!, mergedTracks);
+          const contextUri = `spotify:playlist:${playlistId}`;
+          
+          await this.spotifyService.startPlayback([], deviceId, contextUri);
+        } catch (err) {
+          console.error("Failed managing automated context cache playlist layer:", err);
+          window.alert("Error setting up large context stream, falling back to shortened explicit arrays.");
+          await this.spotifyService.startPlayback(mergedTracks.slice(0, 100), deviceId);
+        }
+      } else {
+        // Runs immediately with no alert pop-up window
+        await this.spotifyService.startPlayback(mergedTracks, deviceId);
+      }
       
-      // Successfully generated, so reset the flag
       this.playlistConfigChanged = false; 
     } else {
-      // Nothing changed! Just tell Spotify to resume the existing queue.
       await this.spotifyService.resumePlayback(deviceId);
+    }
+  }
+
+  async saveCurrentPlaylist() {
+    if (this.selectedPlaylists.length === 0) {
+      window.alert("Please blend at least one pinned target to save.");
+      return;
+    }
+
+    try {
+      const mergedTracks = await this.getMergedTracks();
+      const customName = "Blended: " + this.selectedPlaylists.map(p => p.name).join(' + ');
+      
+      const userId = await this.spotifyService.getCurrentUserId();
+      const created = await this.spotifyService.createPlaylist(userId, customName, `Saved export blend containing: ${customName}`);
+      
+      await this.spotifyService.overwritePlaylistTracks(created.id, mergedTracks);
+      window.alert(`Successfully exported custom configuration as permanent folder reference: "${customName}"`);
+    } catch (err) {
+      console.error("Failed executing storage save track configuration operation:", err);
+      window.alert("Could not export configuration snapshot onto your personal account.");
     }
   }
 
   async pause() {
     const activeDevice = this.getActiveDevice();
-    if (activeDevice && activeDevice.id) {
+    if (activeDevice?.id) {
       try {
         await this.spotifyService.pausePlayback(activeDevice.id);
         activeDevice.is_active = false;
@@ -164,15 +214,11 @@ export class Home implements OnInit {
 
   async nextTrack() {
     const activeDevice = this.getActiveDevice();
-    if (activeDevice?.id) {
-      await this.spotifyService.skipNext(activeDevice.id);
-    }
+    if (activeDevice?.id) await this.spotifyService.skipNext(activeDevice.id);
   }
 
   async prevTrack() {
     const activeDevice = this.getActiveDevice();
-    if (activeDevice?.id) {
-      await this.spotifyService.skipPrevious(activeDevice.id);
-    }
+    if (activeDevice?.id) await this.spotifyService.skipPrevious(activeDevice.id);
   }
 }
