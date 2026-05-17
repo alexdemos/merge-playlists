@@ -24,7 +24,7 @@ export class SpotifyAuthService {
   private readonly redirectUri = 'http://127.0.0.1:4200/callback';
   
   // UPDATED: Added ugc-image-upload, playlist-modify-public, and playlist-modify-private to permissions scope
-  private readonly scopes = 'user-read-private user-read-email user-modify-playback-state playlist-read-private playlist-modify-public playlist-modify-private ugc-image-upload';
+  private readonly scopes = 'user-read-private user-read-email user-modify-playback-state playlist-read-private playlist-modify-public playlist-modify-private ugc-image-upload user-read-playback-state';
 
   // 1. Tracks whether a refresh network call is already running
   private activeRefreshPromise: Promise<string | null> | null = null;

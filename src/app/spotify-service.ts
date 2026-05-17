@@ -107,14 +107,14 @@ export class SpotifyService {
   }
 
   async getUserDevices(forceRefresh = false): Promise<any> {
-    if (!forceRefresh) {
-      const cachedDevices = localStorage.getItem('spotify_cached_devices');
-      if (cachedDevices) return JSON.parse(cachedDevices);
-    }
-    const data = await firstValueFrom(this.http.get(this.deviceUrl));
-    localStorage.setItem('spotify_cached_devices', JSON.stringify(data));
-    return data;
+  if (!forceRefresh) {
+    const cachedDevices = localStorage.getItem('spotify_cached_devices');
+    if (cachedDevices) return JSON.parse(cachedDevices); // <-- TRAP!
   }
+  const data = await firstValueFrom(this.http.get(this.deviceUrl));
+  localStorage.setItem('spotify_cached_devices', JSON.stringify(data));
+  return data;
+}
   
   async getCurrentUserId(): Promise<string> {
     const data: any = await firstValueFrom(this.http.get(`${this.spotifyRoot}/me`));

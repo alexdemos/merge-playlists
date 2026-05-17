@@ -43,22 +43,40 @@ export class Home implements OnInit {
   }
 
   async loadDevices(forceRefresh = false) {
-    if (isPlatformBrowser(this.platformId)) {
-      try {
-        const data: any = await this.spotifyService.getUserDevices(forceRefresh);
-        this.devices = data.devices || [];
-        const activeDevice = this.devices.find(d => d.is_active);
-        
-        if (activeDevice) {
-          this.selectedDevice = activeDevice;
-        } else if (this.devices.length > 0 && !this.selectedDevice) {
-          this.selectedDevice = this.devices[0];
-        }
-      } catch (err) {
-        console.error('Failed to load user devices:', err);
+  if (isPlatformBrowser(this.platformId)) {
+    try {
+      // Keep track of what ID the user had selected before the refresh
+      const previouslySelectedId = this.selectedDevice?.id;
+
+      const data: any = await this.spotifyService.getUserDevices(forceRefresh);
+      this.devices = data.devices || [];
+      
+      // 1. Check if any device is currently reporting as actively playing on Spotify's backend
+      const activeDevice = this.devices.find(d => d.is_active);
+      
+      // 2. Check if our previously selected device still exists in the newly fetched list
+      const matchingOldDevice = this.devices.find(d => d.id === previouslySelectedId);
+
+      if (activeDevice) {
+        // Prioritize what Spotify says is active right now
+        this.selectedDevice = activeDevice;
+      } else if (matchingOldDevice) {
+        // Otherwise, maintain the user's manual dropdown selection using the fresh object reference
+        this.selectedDevice = matchingOldDevice;
+      } else if (this.devices.length > 0) {
+        // Fallback safely to the first available device if nothing else matches
+        this.selectedDevice = this.devices[0];
+      } else {
+        // Explicitly clear it out if absolutely no devices came back from the API
+        this.selectedDevice = null;
       }
+
+      console.log("Devices updated successfully. Current selection:", this.selectedDevice);
+    } catch (err) {
+      console.error('Failed to load user devices:', err);
     }
   }
+}
 
   onDeviceChange(event: Event) {
     const selectElement = event.target as HTMLSelectElement;
