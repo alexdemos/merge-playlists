@@ -49,25 +49,30 @@
         </button>
 
         <div class="transport-controls">
-          <button class="skip-btn" (click)="prevTrack()" [disabled]="!getActiveDevice()" title="Previous Track">
+          <button class="skip-btn" (click)="prevTrack()" [disabled]="!getActiveDevice() || isLoading" title="Previous Track">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="skip-icon">
               <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
             </svg>
           </button>
 
-          <button class="play-btn" (click)="play()" [disabled]="!selectedDevice" title="Play Blended Playlist">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="play-icon">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
+          <!-- Play Button dynamically shows a loader spinner if isLoading is active -->
+          <button class="play-btn" (click)="play()" [disabled]="!selectedDevice || isLoading" title="Play Blended Playlist">
+            @if (isLoading) {
+              <div class="btn-spinner"></div>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="play-icon">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            }
           </button>
 
-          <button class="pause-btn" (click)="pause()" [disabled]="!getActiveDevice()" title="Pause Active Device">
+          <button class="pause-btn" (click)="pause()" [disabled]="!getActiveDevice() || isLoading" title="Pause Active Device">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="pause-icon">
               <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
             </svg>
           </button>
 
-          <button class="skip-btn" (click)="nextTrack()" [disabled]="!getActiveDevice()" title="Next Track">
+          <button class="skip-btn" (click)="nextTrack()" [disabled]="!getActiveDevice() || isLoading" title="Next Track">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="skip-icon">
               <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
             </svg>

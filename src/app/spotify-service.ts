@@ -35,7 +35,9 @@ export class SpotifyService {
   
   async getPlaylistSongs(playlist: Playlist): Promise<Track[]> {
     let itemsUrl = this.playlistUrl + `/${playlist.id}/items`;
-    const queryParams = new HttpParams().set('fields', 'items(track(name,uri)),next').set('limit', '50');
+    const queryParams = new HttpParams()
+  .set('fields', 'items(track(name,uri,album(images))),next')
+  .set('limit', '50');
     let tracks: Track[] = [];
     let count = 0;
 
@@ -48,7 +50,6 @@ export class SpotifyService {
     return tracks; 
   }
 
-  // Enhanced Playback Execution to support Context URIs (Playlists)
   async startPlayback(tracks: Track[], deviceId?: string | null, contextUri?: string | null) {
     let url = this.playUrl;
     if (deviceId) {
@@ -64,7 +65,6 @@ export class SpotifyService {
       console.warn('Shuffle state update skipped:', err);
     }
 
-    // Play via Playlist Context URI if available; otherwise drop back to an explicit array list
     const body = contextUri ? { context_uri: contextUri } : { uris: tracks.map(t => t.uri) };
     await firstValueFrom(this.http.put(url, body, {}));
   }
@@ -115,8 +115,6 @@ export class SpotifyService {
     localStorage.setItem('spotify_cached_devices', JSON.stringify(data));
     return data;
   }
-
-  // --- PLAYLIST CREATION & POPULATION SERVICES ---
   
   async getCurrentUserId(): Promise<string> {
     const data: any = await firstValueFrom(this.http.get(`${this.spotifyRoot}/me`));
@@ -139,18 +137,36 @@ export class SpotifyService {
     return await firstValueFrom(this.http.post(`${this.spotifyRoot}/users/${userId}/playlists`, body));
   }
 
-  // Replaces all current elements inside a playlist in chunks of 100 items max
   async overwritePlaylistTracks(playlistId: string, tracks: Track[]) {
     const uris = tracks.map(t => t.uri);
     const firstChunk = uris.slice(0, 100);
     
-    // First chunk uses PUT to completely drop old tracks and write fresh replacements
     await firstValueFrom(this.http.put(`${this.spotifyRoot}/playlists/${playlistId}/items`, { uris: firstChunk }));
 
-    // Remaining tracks are appended in sequential chunks using POST
     for (let i = 100; i < uris.length; i += 100) {
       const nextChunk = uris.slice(i, i + 100);
       await firstValueFrom(this.http.post(`${this.spotifyRoot}/playlists/${playlistId}/items`, { uris: nextChunk }));
     }
+  }
+
+  // NEW: Deletes (unfollows) a playlist from the user's account
+  async unfollowPlaylist(playlistId: string): Promise<any> {
+    return await firstValueFrom(this.http.delete(`${this.spotifyRoot}/playlists/${playlistId}/followers`));
+  }
+
+  async uploadPlaylistCoverImage(playlistId: string, base64Image: string): Promise<any> {
+  // Remove data URL prefix if it exists (e.g., "data:image/jpeg;base64,")
+    const cleanBase64 = base64Image.replace(/^data:image\/jpeg;base64,/, "");
+    
+    return await firstValueFrom(
+      this.http.put(
+        `${this.spotifyRoot}/playlists/${playlistId}/images`, 
+        cleanBase64, 
+        {
+          headers: { 'Content-Type': 'image/jpeg' },
+          responseType: 'text' // Spotify returns a 202 Accepted status with an empty body
+        }
+      )
+    );
   }
 }

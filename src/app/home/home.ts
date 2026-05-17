@@ -28,7 +28,8 @@ export class Home implements OnInit {
   selectedDevice: SpotifyDevice | null = null;
   
   playlistConfigChanged = true; 
-  CACHE_PLAYLIST_NAME = "My Playlist Blender Cache";
+  isLoading = false; // NEW: Processing animation controller flag
+  TEMP_PLAYLIST_NAME = "Temp Blender Playback Cache";
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
@@ -76,7 +77,7 @@ export class Home implements OnInit {
   pinPlaylist(playlist: Playlist) {
     this.playlistConfigChanged = true; 
     if (!this.selectedPlaylists.includes(playlist)) {
-      if (this.selectedPlaylists.length < 5) {
+      if (this.selectedPlaylists.length < 4) {
         this.selectedPlaylists.push(playlist);
         playlist.isSelected = true;
         this.homeForm.addControl(playlist.id, new FormControl(1));
@@ -126,79 +127,158 @@ export class Home implements OnInit {
       return;
     }
 
+    this.isLoading = true; // Turn loader on
     const deviceId = this.selectedDevice.id;
     this.devices.forEach(d => d.is_active = false);
     this.selectedDevice.is_active = true;
 
-    if (this.playlistConfigChanged) {
-      const mergedTracks = await this.getMergedTracks();
-      
-      if (mergedTracks.length === 0) {
-        window.alert("No songs found to blend!");
-        return;
-      }
+    try {
+      if (this.playlistConfigChanged) {
+        const mergedTracks = await this.getMergedTracks();
+        
+        if (mergedTracks.length === 0) {
+          window.alert("No songs found to blend!");
+          return;
+        }
 
-      // If greater than 100 tracks, trigger the streamlined warning prompt
-      if (mergedTracks.length > 100) {
-        const message = 
-          `This large mix (${mergedTracks.length} songs) requires a helper playlist.\n\n` +
-          `• It will be saved as "${this.CACHE_PLAYLIST_NAME}".\n` +
-          `• Future big mixes will overwrite this playlist.\n` +
-          `• Click "Save Mix to Spotify" later if you want a permanent copy.\n\n` +
-          `Proceed with playback?`;
-
-        const userConfirmed = window.confirm(message);
-        if (!userConfirmed) return;
-
-        try {
+        if (mergedTracks.length > 100) {
           const userId = await this.spotifyService.getCurrentUserId();
-          let playlistId = await this.spotifyService.findUserPlaylistByName(this.CACHE_PLAYLIST_NAME);
+          const tempPlaylist = await this.spotifyService.createPlaylist(userId, this.TEMP_PLAYLIST_NAME, "Temporary tracking container.");
+          const playlistId = tempPlaylist.id;
           
-          if (!playlistId) {
-            const newPlaylist = await this.spotifyService.createPlaylist(userId, this.CACHE_PLAYLIST_NAME, "Automated blending cache track area.");
-            playlistId = newPlaylist.id;
-          }
-          
-          await this.spotifyService.overwritePlaylistTracks(playlistId!, mergedTracks);
+          await this.spotifyService.overwritePlaylistTracks(playlistId, mergedTracks);
           const contextUri = `spotify:playlist:${playlistId}`;
           
           await this.spotifyService.startPlayback([], deviceId, contextUri);
-        } catch (err) {
-          console.error("Failed managing automated context cache playlist layer:", err);
-          window.alert("Error setting up large context stream, falling back to shortened explicit arrays.");
-          await this.spotifyService.startPlayback(mergedTracks.slice(0, 100), deviceId);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          await this.spotifyService.unfollowPlaylist(playlistId);
+        } else {
+          await this.spotifyService.startPlayback(mergedTracks, deviceId);
         }
+        
+        this.playlistConfigChanged = false; 
       } else {
-        // Runs immediately with no alert pop-up window
-        await this.spotifyService.startPlayback(mergedTracks, deviceId);
+        await this.spotifyService.resumePlayback(deviceId);
       }
-      
-      this.playlistConfigChanged = false; 
-    } else {
-      await this.spotifyService.resumePlayback(deviceId);
+    } catch (err) {
+      console.error("Error inside playback execution pipeline:", err);
+      window.alert("Playback failed to initiate correctly.");
+    } finally {
+      this.isLoading = false; // Turn loader off when finished or crashed
     }
   }
 
-  async saveCurrentPlaylist() {
-    if (this.selectedPlaylists.length === 0) {
-      window.alert("Please blend at least one pinned target to save.");
+  // Helper to generate a 2x2 grid cover image from track artwork URLs
+private generateMosaicImage(imageUrls: string[]): Promise<string> {
+  return new Promise((resolve, reject) => {
+    // If we don't have enough distinct images for a grid, fallback to an empty string
+    if (imageUrls.length < 4) {
+      resolve("");
       return;
     }
 
-    try {
-      const mergedTracks = await this.getMergedTracks();
-      const customName = "Blended: " + this.selectedPlaylists.map(p => p.name).join(' + ');
-      
-      const userId = await this.spotifyService.getCurrentUserId();
-      const created = await this.spotifyService.createPlaylist(userId, customName, `Saved export blend containing: ${customName}`);
-      
-      await this.spotifyService.overwritePlaylistTracks(created.id, mergedTracks);
-      window.alert(`Successfully exported custom configuration as permanent folder reference: "${customName}"`);
-    } catch (err) {
-      console.error("Failed executing storage save track configuration operation:", err);
-      window.alert("Could not export configuration snapshot onto your personal account.");
+    const canvas = document.createElement('canvas');
+    canvas.width = 640;
+    canvas.height = 640;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      reject("Could not get 2D canvas context");
+      return;
     }
+
+    let loadedCount = 0;
+    const images = imageUrls.slice(0, 4).map((url, index) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous'; // Crucial to prevent CORS "tainted canvas" security errors
+      
+      img.onload = () => {
+        loadedCount++;
+        // Determine x, y coordinates for a 2x2 grid (each square is 320x320)
+        const x = (index % 2) * 320;
+        const y = Math.floor(index / 2) * 320;
+        ctx.drawImage(img, x, y, 320, 320);
+
+        // Once all 4 corners are drawn, export as an optimized JPEG string
+        if (loadedCount === 4) {
+          resolve(canvas.toDataURL('image/jpeg', 0.7)); // 0.7 quality keeps file size under 256 KB
+        }
+      };
+
+      img.onerror = () => {
+        reject(`Failed to load image asset for mosaic compile: ${url}`);
+      };
+
+      img.src = url;
+      return img;
+    });
+  });
+}
+
+async saveCurrentPlaylist() {
+  if (this.selectedPlaylists.length === 0) {
+    window.alert("Please blend at least one pinned target to save.");
+    return;
   }
+
+  this.isLoading = true;
+
+  try {
+    const mergedTracks = await this.getMergedTracks();
+    const customName = "Blended: " + this.selectedPlaylists.map(p => p.name).join(' + ');
+    
+    // --- NEW: Gather cover art directly from the pinned Playlists ---
+    const artworkUrls: string[] = [];
+    
+    // Loop through your selected playlists to extract their native cover art
+    for (const playlist of this.selectedPlaylists) {
+      if (playlist.images && playlist.images.length > 0) {
+        // Spotify playlist images array: index 0 is usually the highest resolution
+        const targetUrl = playlist.images[0].url;
+        if (targetUrl && !artworkUrls.includes(targetUrl)) {
+          artworkUrls.push(targetUrl);
+        }
+      }
+    }
+
+    // Fallback safely: If the user only blended 2 or 3 playlists, duplicate images 
+    // to ensure we always have exactly 4 slots filled for a clean 2x2 canvas layout grid
+    const finalArtworkUrls: string[] = [];
+    if (artworkUrls.length > 0) {
+      while (finalArtworkUrls.length < 4) {
+        finalArtworkUrls.push(...artworkUrls);
+      }
+    }
+    const mosaicImages = finalArtworkUrls.slice(0, 4);
+    // -----------------------------------------------------------------
+
+    // 1. Create the target playlist framework container
+    const userId = await this.spotifyService.getCurrentUserId();
+    const created = await this.spotifyService.createPlaylist(userId, customName, `Saved export blend containing: ${customName}`);
+    const playlistId = created.id;
+
+    // 2. Hydrate the track payload into the container
+    await this.spotifyService.overwritePlaylistTracks(playlistId, mergedTracks);
+    
+    // 3. Compile and push the mosaic up to Spotify's servers
+    if (mosaicImages.length === 4) {
+      try {
+        const base64Image = await this.generateMosaicImage(mosaicImages);
+        if (base64Image) {
+          await this.spotifyService.uploadPlaylistCoverImage(playlistId, base64Image);
+        }
+      } catch (imageError) {
+        console.warn("Mosaic canvas compilation skipped, defaulting to native fallback art:", imageError);
+      }
+    }
+
+    window.alert(`Successfully exported custom configuration: "${customName}"`);
+  } catch (err) {
+    console.error("Failed executing storage save track configuration operation:", err);
+    window.alert("Could not export configuration snapshot onto your personal account.");
+  } finally {
+    this.isLoading = false;
+  }
+}
 
   async pause() {
     const activeDevice = this.getActiveDevice();

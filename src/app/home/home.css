@@ -343,3 +343,20 @@ input[type="text"]::placeholder {
 .auth-container {
   margin-bottom: 15px;
 }
+
+/* --- NEW: PROCESSING MINI BUTTON SPINNER --- */
+.btn-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(29, 185, 84, 0.2); /* Spotify green tint background */
+  border-top-color: #1DB954;                /* Spotify solid green pointer */
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
