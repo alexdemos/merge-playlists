@@ -1,1 +1,53 @@
 /* You can add global styles to this file, and also import other style files */
+/* src/styles.css */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: #121212; /* Spotify's base deep black/gray */
+  color: #FFFFFF;           /* Global default white text color */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* src/styles.css */
+
+/* --- GLOBAL BUTTON UTILITIES --- */
+.spotify-btn {
+  background-color: #1DB954; /* Spotify Green */
+  color: #000000;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 50px; /* Pill Shape */
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+/* Hover & Active States apply universally */
+.spotify-btn:hover {
+  background-color: #1ed760; /* Lighter bright green */
+  transform: scale(1.04);
+}
+
+.spotify-btn:active {
+  transform: scale(0.98);
+}
+
+/* Secondary Button variant style option (e.g., Cancel / Back buttons) */
+.spotify-btn-secondary {
+  background-color: transparent;
+  color: #FFFFFF;
+  border: 1px solid #727272;
+}
+
+.spotify-btn-secondary:hover {
+  border-color: #FFFFFF;
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.04);
+}
+

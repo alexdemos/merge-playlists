@@ -1,0 +1,149 @@
+/* --- GLOBAL STYLING / THEME WRAPPER --- */
+/* Add background-color: #121212 to your main app body wrapper if possible */
+h1 {
+  color: #FFFFFF;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+/* --- BUTTON LAYOUTS --- */
+button.listing {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  width: 100%;
+  display: block;
+}
+
+/* Primary Spotify Pills (Connect / Play / Search) */
+button:not(.listing) {
+  background-color: #1DB954; /* Spotify Green */
+  color: #000000;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 50px; /* Pill shape */
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  margin-right: 12px;
+}
+
+button:not(.listing):hover {
+  background-color: #1ed760; /* Lighter bright green on hover */
+  transform: scale(1.04);
+}
+
+button:not(.listing):active {
+  transform: scale(0.98);
+}
+
+/* --- SEARCH BAR BAR --- */
+form {
+  display: flex;
+  gap: 12px;
+  margin: 32px 0;
+  max-width: 450px;
+}
+
+input[type="text"] {
+  flex: 1;
+  background-color: #242424; /* Dark gray input background */
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 12px 16px;
+  color: #FFFFFF;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: #1DB954; /* Highlight input with green border on focus */
+}
+
+input[type="text"]::placeholder {
+  color: #A7A7A7;
+}
+
+.pinned-playlists-list {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 48px;
+  
+  /* Color changes for contrast */
+  background-color: #1e1e1e;            /* Lighter charcoal gray color */
+  border: 1px solid rgba(255,255,255,0.05); /* Very faint border highlight */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); /* Drop shadow for separation */
+  
+  padding: 24px;
+  border-radius: 8px;
+  max-width: 100%; 
+  box-sizing: border-box;
+}
+
+
+.playlist-card {
+  display: flex;
+  flex-direction: column;
+  width: 140px;
+}
+
+/* --- RATIO INPUT BOX --- */
+.ratio-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Left align to match text style */
+  margin-top: 12px;
+  width: 100%;
+}
+
+.ratio-container p {
+  margin: 0 0 6px 0;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #A7A7A7; /* Clean muted text color */
+}
+
+.ratio-container input[type="number"] {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #2A2A2A;
+  border: 1px solid #3E3E3E;
+  border-radius: 4px;
+  padding: 8px;
+  color: #1DB954; /* Green numbers! */
+  font-weight: 700;
+  font-size: 14px;
+  text-align: center;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.ratio-container input[type="number"]:focus {
+  outline: none;
+  border-color: #1DB954;
+  background-color: #333333;
+}
+
+/* --- SEARCH RESULTS (Grid Layout) --- */
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.auth-container {
+  margin-bottom: 15px; /* Adds space below the log in / log out buttons */
+}
+
+.control-panel button {
+  display: block;      /* Forces buttons inside the control panel to stack vertically */
+  margin-bottom: 10px; /* Adds space below the play button if the delete button shows up */
+}

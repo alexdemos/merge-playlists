@@ -1,0 +1,38 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.playlist-listing {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  transition: transform 0.2s ease;
+}
+
+/* Subtle scaling effect on hover */
+.playlist-listing:hover {
+  transform: scale(1.03);
+}
+
+.playlist-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); /* Deep shadow for depth */
+}
+
+.playlist-title {
+  color: #FFFFFF; /* High contrast crisp white text */
+  font-size: 14px;
+  font-weight: 700;
+  margin: 12px 0 0 0;
+  text-align: left;
+  
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
