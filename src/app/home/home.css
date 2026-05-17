@@ -16,7 +16,6 @@ button.listing {
 }
 
 /* Primary Spotify Pills (Log in/out, Search) */
-/* Kept simple: any button that isn't a listing gets this default pill styling */
 button:not(.listing) {
   background-color: #1DB954; 
   color: #000000;
@@ -37,6 +36,26 @@ button:not(.listing):hover {
 
 button:not(.listing):active {
   transform: scale(0.98);
+}
+
+button.save-mix-btn {
+  background-color: transparent;
+  color: #1DB954;
+  border: 1px solid #1DB954;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+}
+
+button.save-mix-btn:hover {
+  background-color: rgba(29, 185, 84, 0.1);
+  color: #1ed760;
+  border-color: #1ed760;
+  transform: none;
 }
 
 /* --- PLAYBACK CONTROL BAR (Single Line Panel) --- */
@@ -71,7 +90,7 @@ button:not(.listing):active {
   padding: 8px 32px 8px 16px;
   font-size: 13px;
   font-weight: 600;
-  border-radius: 8px; /* Slightly square to contrast with play buttons */
+  border-radius: 8px;
   appearance: none;
   -webkit-appearance: none;
   cursor: pointer;
@@ -93,10 +112,7 @@ button:not(.listing):active {
   pointer-events: none;
 }
 
-/* 
-  NEW: DISTINCT REFRESH BUTTON
-  Uses explicit scoping (.playback-bar button) to safely overwrite the default green pill styles 
-*/
+/* Distinct Sync Layout Button Rules */
 .playback-bar button.refresh-btn {
   background-color: transparent;
   color: #b3b3b3;
@@ -120,7 +136,7 @@ button:not(.listing):active {
   transform: none; 
 }
 
-/* Transport Controls Wrapper (Play, Pause, Skip) */
+/* Transport Controls Wrapper */
 .transport-controls {
   display: flex;
   align-items: center;
@@ -163,7 +179,7 @@ button:not(.listing):active {
 
 /* Play Button */
 .playback-bar button.play-btn {
-  background-color: #ffffff; /* White to match modern Spotify desktop UI */
+  background-color: #ffffff;
   color: #000000;
   border: none;
   border-radius: 50%;
@@ -197,7 +213,7 @@ button:not(.listing):active {
 
 /* Pause Button */
 .playback-bar button.pause-btn {
-  background-color: #1DB954; /* Lights up green so you know it's active */
+  background-color: #1DB954;
   color: #000000;
   border: none;
   border-radius: 50%;
@@ -227,8 +243,8 @@ button:not(.listing):active {
   fill: currentColor;
 }
 
-/* --- SEARCH BAR --- */
-form {
+/* --- SEARCH CONTAINER STYLING --- */
+.search-container {
   display: flex;
   gap: 12px;
   margin: 32px 0;
@@ -326,4 +342,21 @@ input[type="text"]::placeholder {
 
 .auth-container {
   margin-bottom: 15px;
+}
+
+/* --- NEW: PROCESSING MINI BUTTON SPINNER --- */
+.btn-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(29, 185, 84, 0.2); /* Spotify green tint background */
+  border-top-color: #1DB954;                /* Spotify solid green pointer */
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
