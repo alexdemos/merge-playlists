@@ -162,6 +162,30 @@
   cursor: pointer;
 }
 
+/* Login Button Styles */
+.btn-primary.login-btn {
+  background-color: #3b82f6; /* Midnight Cobalt Blue */
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.85rem;       /* Matched to transport/search text size */
+  padding: 10px 16px;        /* Much tighter padding */
+  border: none;
+  border-radius: 6px;        /* Swapped pill shape for the matching 6px radius */
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary.login-btn:hover {
+  background-color: #60a5fa; /* Lighter sky blue on hover */
+}
+
+.btn-primary.login-btn:active {
+  background-color: #2563eb; /* Darker blue split-second feedback */
+}
+
 .selected-ratios-list {
   background-color: #0c0c0c;
   border: 1px solid #334155;
