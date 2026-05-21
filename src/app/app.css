@@ -1,7 +1,7 @@
 /* src/app/app.component.css */
 
 .app-header {
-  background-color: #000000; /* True black header header background bar */
+  background-color: #0f172a; /* Updated to match main background */
   padding: 16px 32px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   position: sticky;
@@ -18,12 +18,12 @@
 .spotify-dot {
   width: 12px;
   height: 12px;
-  background-color: #1DB954; /* Spotify Green dot */
+  background-color: #3b82f6; /* Swapped to Cobalt Blue */
   border-radius: 50%;
 }
 
 .app-title {
-  color: #FFFFFF;
+  color: #f8fafc; /* Updated to match main text color */
   margin: 0;
   font-size: 20px;
   font-weight: 800;

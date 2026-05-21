@@ -1,362 +1,460 @@
-/* --- GLOBAL STYLING / THEME WRAPPER --- */
-h1 {
-  color: #FFFFFF;
-  font-weight: 800;
-  letter-spacing: -0.5px;
+.dashboard-container {
+  display: grid;
+  grid-template-columns: 290px 1fr;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #0f172a;
+  color: #f8fafc;
 }
 
-/* --- BUTTON LAYOUTS --- */
-button.listing {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  width: 100%;
-  display: block;
+.sidebar-controls {
+  background-color: #000000;
+  border-right: 1px solid #334155;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  height: 100%;
+  box-sizing: border-box;
+  justify-content: flex-start;
+  /* Allow the entire sidebar to scroll if content + controls exceed viewport height */
+  overflow-y: auto; 
 }
 
-/* Primary Spotify Pills (Log in/out, Search) */
-button:not(.listing) {
-  background-color: #1DB954; 
-  color: #000000;
+/* REVERTED: Dynamic flow so it gets bumped down naturally */
+.sidebar-actions {
+  margin-top: 12px; 
+  padding-top: 12px;
+  border-top: 1px solid #334155; /* Added a subtle separator line */
+}
+
+.app-branding h2 {
+  margin: 0 0 2px 0;
+  font-size: 1.2rem;
   font-weight: 700;
-  font-size: 14px;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 50px; 
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  margin-right: 12px;
 }
 
-button:not(.listing):hover {
-  background-color: #1ed760; 
-  transform: scale(1.04);
-}
-
-button:not(.listing):active {
-  transform: scale(0.98);
-}
-
-button.save-mix-btn {
-  background-color: transparent;
-  color: #1DB954;
-  border: 1px solid #1DB954;
-  font-weight: 700;
-  font-size: 13px;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.user-status-area {
   margin-bottom: 8px;
 }
 
-button.save-mix-btn:hover {
-  background-color: rgba(29, 185, 84, 0.1);
-  color: #1ed760;
-  border-color: #1ed760;
-  transform: none;
-}
-
-/* --- PLAYBACK CONTROL BAR (Single Line Panel) --- */
-.control-panel {
+.user-status-row {
   display: flex;
-  justify-content: center;
-  margin: 32px 0;
-  width: 100%;
-}
-
-.playback-bar {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background-color: #181818; 
-  padding: 10px 20px;
-  border-radius: 50px; 
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-}
-
-/* Device Dropdown */
-.select-wrapper {
-  position: relative;
-  display: flex;
+  justify-content: space-between;
   align-items: center;
 }
 
-.select-wrapper select {
-  background-color: #282828;
-  color: #ffffff;
-  border: 1px solid #3e3e3e;
-  padding: 8px 32px 8px 16px;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 8px;
-  appearance: none;
-  -webkit-appearance: none;
+.online-indicator {
+  font-size: 0.72rem;
+  color: #3b82f6;
+}
+
+.btn-text-link {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.7rem;
   cursor: pointer;
-  transition: border-color 0.2s;
-  min-width: 160px;
+  text-decoration: underline;
 }
 
-.select-wrapper select:focus {
-  outline: none;
-  border-color: #1DB954;
-}
-
-.select-wrapper::after {
-  content: '▼';
-  font-size: 9px;
-  color: #b3b3b3;
-  position: absolute;
-  right: 12px;
-  pointer-events: none;
-}
-
-/* Distinct Sync Layout Button Rules */
-.playback-bar button.refresh-btn {
-  background-color: transparent;
-  color: #b3b3b3;
-  border: 1px solid #535353;
-  border-radius: 6px;
-  padding: 6px 12px;
-  margin: 0;
-  font-size: 12px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.playback-bar button.refresh-btn:hover {
-  color: #ffffff;
-  border-color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.05);
-  transform: none; 
-}
-
-/* Transport Controls Wrapper */
-.transport-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border-left: 1px solid #333333;
-  padding-left: 16px;
-}
-
-/* Skip Buttons (Next/Prev) */
-.playback-bar button.skip-btn {
-  background-color: transparent;
-  color: #b3b3b3;
-  border: none;
-  border-radius: 0;
-  padding: 4px;
-  margin: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.playback-bar button.skip-btn:hover:not(:disabled) {
-  color: #ffffff;
-  background-color: transparent;
-  transform: scale(1.1);
-}
-
-.playback-bar button.skip-btn:disabled {
-  color: #535353;
-  cursor: not-allowed;
-}
-
-.skip-icon {
-  width: 20px;
-  height: 20px;
-  fill: currentColor;
-}
-
-/* Play Button */
-.playback-bar button.play-btn {
-  background-color: #ffffff;
-  color: #000000;
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  transition: transform 0.2s ease;
-}
-
-.playback-bar button.play-btn:hover:not(:disabled) {
-  transform: scale(1.06);
-  background-color: #ffffff;
-}
-
-.playback-bar button.play-btn:disabled {
-  background-color: #535353;
-  color: #b3b3b3;
-  cursor: not-allowed;
-}
-
-.play-icon {
-  width: 20px;
-  height: 20px;
-  margin-left: 2px;
-  fill: currentColor;
-}
-
-/* Pause Button */
-.playback-bar button.pause-btn {
-  background-color: #1DB954;
-  color: #000000;
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-.playback-bar button.pause-btn:hover:not(:disabled) {
-  background-color: #1ed760;
-  transform: scale(1.06);
-}
-
-.playback-bar button.pause-btn:disabled {
-  background-color: #181818;
-  color: #535353;
-  cursor: not-allowed;
-}
-
-.pause-icon {
-  width: 18px;
-  height: 18px;
-  fill: currentColor;
-}
-
-/* --- SEARCH CONTAINER STYLING --- */
-.search-container {
-  display: flex;
-  gap: 12px;
-  margin: 32px 0;
-  max-width: 450px;
-}
-
-input[type="text"] {
-  flex: 1;
-  background-color: #242424; 
-  border: 1px solid transparent;
-  border-radius: 4px;
-  padding: 12px 16px;
-  color: #FFFFFF;
-  font-size: 14px;
-  transition: border-color 0.2s ease;
-}
-
-input[type="text"]:focus {
-  outline: none;
-  border-color: #1DB954; 
-}
-
-input[type="text"]::placeholder {
-  color: #A7A7A7;
-}
-
-/* --- PINNED PLAYLIST TRACK WRAPPER --- */
-.pinned-playlists-list {
-  display: inline-flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 24px;
-  align-items: flex-start;
-  margin-bottom: 48px;
-  background-color: #1e1e1e;            
-  border: 1px solid rgba(255,255,255,0.05); 
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); 
-  padding: 24px;
-  border-radius: 8px;
-  max-width: 100%; 
-  box-sizing: border-box;
-}
-
-.playlist-card {
+.control-card {
+  margin-bottom: 8px;
   display: flex;
   flex-direction: column;
-  width: 140px;
 }
 
-/* --- RATIO INPUT BOX --- */
-.ratio-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; 
-  margin-top: 12px;
-  width: 100%;
-}
-
-.ratio-container p {
-  margin: 0 0 6px 0;
-  font-size: 11px;
-  font-weight: 700;
+.section-label {
+  font-size: 0.62rem;
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  color: #A7A7A7; 
-}
-
-.ratio-container input[type="number"] {
-  width: 100%;
-  box-sizing: border-box;
-  background-color: #2A2A2A;
-  border: 1px solid #3E3E3E;
-  border-radius: 4px;
-  padding: 8px;
-  color: #1DB954; 
+  color: #94a3b8;
+  margin-bottom: 6px;
   font-weight: 700;
-  font-size: 14px;
-  text-align: center;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
-.ratio-container input[type="number"]:focus {
-  outline: none;
-  border-color: #1DB954;
-  background-color: #333333;
+.compact-search-input {
+  width: 100%;
+  padding: 10px 12px;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.85rem;
+  box-sizing: border-box;
 }
 
-/* --- SEARCH RESULTS (Grid Layout) --- */
-.results-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 24px;
-  margin-top: 24px;
+.device-routing-block {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
 }
 
-.auth-container {
-  margin-bottom: 15px;
+.compact-select {
+  flex: 1;
+  padding: 10px;
+  background-color: #0f172a;
+  color: #fff;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  font-size: 0.82rem;
 }
 
-/* --- NEW: PROCESSING MINI BUTTON SPINNER --- */
-.btn-spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(29, 185, 84, 0.2); /* Spotify green tint background */
-  border-top-color: #1DB954;                /* Spotify solid green pointer */
+.btn-refresh-icon {
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0 12px;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.playback-transport-strip {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.btn-transport {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  color: #fff;
+  padding: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+}
+
+.btn-transport.main-play {
+  flex: 2;
+  background-color: #fff;
+  color: #000;
+  font-weight: 700;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.88rem;
+  transition: background-color 0.2s ease;
+}
+
+.btn-transport.main-play:disabled {
+  background-color: #475569;
+  color: #0f172a;
+  cursor: not-allowed;
+}
+
+.btn-secondary-save {
+  width: 100%;
+  padding: 12px;
+  background: none;
+  border: 1px solid #475569;
+  color: #e5e5e5;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.selected-ratios-list {
+  background-color: #0c0c0c;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 8px;
+  max-height: 260px; /* Increased slightly to accommodate larger touch targets */
+  overflow-y: auto;
+}
+
+.ratio-mixing-strip {
+  margin-bottom: 10px; /* Added spacing between mixing track items */
+}
+
+.ratio-mixing-strip:last-child {
+  margin-bottom: 0;
+}
+
+.playlist-mini-title {
+  display: block;
+  font-size: 0.78rem;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slider-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* UPDATED: Bigger, more robust interactive range sliders */
+.slider-group input[type="range"] {
+  flex: 1;
+  accent-color: #3b82f6;
+  height: 6px; /* Thickened the track line */
+  cursor: pointer;
+  background: #475569;
+  border-radius: 3px;
+}
+
+/* Enhancing the slider handle size across standard web browsers */
+.slider-group input[type="range"]::-webkit-slider-thumb {
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  background: #3b82f6;
+  transition: transform 0.1s ease, background-color 0.1s ease;
+}
+
+.slider-group input[type="range"]:hover::-webkit-slider-thumb {
+  transform: scale(1.2);
+  background: #60a5fa; /* Brighter blue on interactive focus hover */
+}
+
+.ratio-badge {
+  font-size: 0.7rem;
+  background-color: #1e293b;
+  color: #3b82f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* Animated loading circle loader */
+.spinning-loader {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin-clockwise 0.8s linear infinite;
   display: inline-block;
 }
 
-@keyframes spin {
+@keyframes spin-clockwise {
   to {
     transform: rotate(360deg);
   }
 }
+
+/* =========================================
+   MOBILE RESPONSIVE LAYOUT (Max width 768px)
+   ========================================= */
+@media (max-width: 768px) {
+  
+  /* 1. Base Container: Locked to screen boundaries to eliminate page stretching */
+  .dashboard-container {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;      /* Overrides 100vw to eliminate side-to-side scrolling */
+    max-width: 100% !important;  /* Strict horizontal constraint */
+    height: 100dvh !important;   /* Uses dynamic viewport height for mobile browsers */
+    overflow: hidden !important; /* Locks the page body so only the workspace scrolls */
+    padding: 0 !important;
+  }
+
+  /* 2. Top Bar: Low padding, completely reactive height */
+  .sidebar-controls {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important; 
+    max-height: 40vh !important; 
+    padding: 6px 8px !important; /* Drastically lowered padding */
+    border-right: none !important;
+    border-bottom: 1px solid #334155 !important;
+    overflow-y: auto !important; 
+    box-sizing: border-box !important;
+  }
+
+  .app-branding h2 {
+    font-size: 1.1rem !important;
+  }
+
+  /* Sliders expand naturally without internal scrolling */
+  .selected-ratios-list {
+    height: auto !important;
+    max-height: none !important; 
+    overflow: visible !important; 
+    padding: 2px 0 !important;
+    background: transparent !important;
+    border: none !important;
+  }
+
+  /* Ultra-Compact Ratio Sliders */
+  .ratio-mixing-strip {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 4px !important;
+    background: #1e293b !important;
+    padding: 4px 6px !important;
+    border-radius: 4px !important;
+  }
+
+  .ratio-mixing-strip:last-child {
+    margin-bottom: 0 !important;
+  }
+  
+  .playlist-mini-title {
+    margin-bottom: 0 !important;
+    width: 75px !important; 
+    margin-right: 6px !important;
+    font-size: 0.7rem !important;
+  }
+  
+  .slider-group {
+    flex: 1 !important;
+    gap: 6px !important;
+  }
+
+  .compact-search-input {
+    padding: 6px 10px !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* 3. UNIVERSAL PLAYLIST TILE COMPRESSION */
+  .tile-wrapper,
+  .tile-wrapper app-playlist-tile {
+    max-width: 85px !important; 
+    box-sizing: border-box !important;
+  }
+
+  .tile-wrapper {
+    padding: 4px !important; 
+    border-radius: 4px !important;
+  }
+
+  .tile-wrapper h4, 
+  .tile-wrapper p,
+  .tile-wrapper span,
+  .tile-wrapper .playlist-title,
+  .tile-wrapper .playlist-subtitle { 
+    font-size: 0.65rem !important;
+    line-height: 1.1 !important;
+    margin-top: 2px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .tile-wrapper img,
+  .tile-wrapper .playlist-art {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 2px !important;
+  }
+
+  /* Horizontal Swiper for Pinned Playlists */
+  .workspace-shelf:has(.pinned-checkmark-indicator) .tile-grid {
+    display: flex !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    padding-bottom: 4px !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    align-items: flex-start !important; 
+    width: 100% !important;
+  }
+
+  .workspace-shelf:has(.pinned-checkmark-indicator) .tile-grid .tile-wrapper {
+    flex: 0 0 85px !important; 
+    scroll-snap-align: start !important;
+  }
+
+  /* Vertical Grid for Search Results */
+  .workspace-shelf:not(:has(.pinned-checkmark-indicator)) .tile-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)) !important; 
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .pinned-checkmark-indicator {
+    top: 2px !important;
+    right: 2px !important;
+    width: 12px !important;
+    height: 12px !important;
+    line-height: 12px !important;
+    font-size: 0.5rem !important;
+  }
+
+  /* 4. Workspace Content: Low padding, isolated vertical scrolling */
+  .workspace-content {
+    flex: 1 !important; 
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 8px !important;          /* Reduced workspace padding */
+    padding-bottom: 180px !important; /* Massive scroll buffer so items float way above player deck */
+    overflow-y: auto !important;      /* Handles ALL application scrolling safely */
+    overflow-x: hidden !important;    /* Hard block on horizontal shifting */
+    box-sizing: border-box !important;
+  }
+
+  .shelf-heading {
+    font-size: 0.75rem !important;
+    margin-bottom: 6px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    color: #94a3b8 !important;
+  }
+
+  .empty-shelf-prompt {
+    padding: 10px !important;
+    font-size: 0.72rem !important;
+  }
+
+  /* 5. Sticky Bottom Player Deck */
+  .sidebar-actions {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    background-color: #0f172a !important;
+    border-top: 1px solid #334155 !important;
+    padding: 10px 12px !important;
+    box-sizing: border-box !important;
+    z-index: 100 !important;
+    margin-top: 0 !important;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.7) !important;
+  }
+
+  .playback-transport-strip {
+    justify-content: space-between !important;
+    gap: 6px !important;
+  }
+  
+  .btn-transport {
+    padding: 10px 0 !important;
+    flex: 1 !important; 
+  }
+
+  .btn-transport.main-play {
+    flex: 1.5 !important;
+  }
+
+  .compact-select {
+    padding: 8px !important;
+    font-size: 0.8rem !important;
+  }
+}
+
+/* Workspace Content styling blocks unchanged */
+.workspace-content { height: 100%; overflow-y: auto; padding: 20px; box-sizing: border-box; background: #0f172a; }
+.workspace-shelf { margin-bottom: 20px; }
+.shelf-heading { margin: 0 0 10px 0; font-size: 1rem; color: #fff; }
+.tile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 135px)); gap: 10px; }
+.tile-wrapper { position: relative; background-color: #1e293b; padding: 8px; border-radius: 4px; cursor: pointer; }
+.tile-wrapper.selected { outline: 1px solid #3b82f6; }
+.pinned-checkmark-indicator { position: absolute; top: 4px; right: 4px; background-color: #3b82f6; color: #fff; font-size: 0.6rem; width: 14px; height: 14px; line-height: 14px; text-align: center; border-radius: 50%; }
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 70%; color: #64748b; }
+.empty-shelf-prompt { background-color: #1e293b; padding: 16px; text-align: center; border-radius: 4px; color: #64748b; font-size: 0.78rem; }

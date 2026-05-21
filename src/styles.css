@@ -5,8 +5,8 @@ html, body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background-color: #121212; /* Spotify's base deep black/gray */
-  color: #FFFFFF;           /* Global default white text color */
+  background-color: #0f172a; /* Updated to Midnight Cobalt base */
+  color: #f8fafc;           /* Global default white text color */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -14,8 +14,8 @@ html, body {
 
 /* --- GLOBAL BUTTON UTILITIES --- */
 .spotify-btn {
-  background-color: #1DB954; /* Spotify Green */
-  color: #000000;
+  background-color: #3b82f6; /* Cobalt Blue */
+  color: #ffffff;
   font-weight: 700;
   font-size: 14px;
   padding: 12px 24px;
@@ -30,7 +30,7 @@ html, body {
 
 /* Hover & Active States apply universally */
 .spotify-btn:hover {
-  background-color: #1ed760; /* Lighter bright green */
+  background-color: #60a5fa; /* Lighter bright blue */
   transform: scale(1.04);
 }
 
@@ -41,13 +41,12 @@ html, body {
 /* Secondary Button variant style option (e.g., Cancel / Back buttons) */
 .spotify-btn-secondary {
   background-color: transparent;
-  color: #FFFFFF;
-  border: 1px solid #727272;
+  color: #f8fafc;
+  border: 1px solid #475569;
 }
 
 .spotify-btn-secondary:hover {
-  border-color: #FFFFFF;
+  border-color: #f8fafc;
   background-color: rgba(255, 255, 255, 0.1);
   transform: scale(1.04);
 }
-

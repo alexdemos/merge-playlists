@@ -1,4 +1,4 @@
-import { Injectable, inject, PLATFORM_ID, signal } from '@angular/core'; // Added signal
+import { Injectable, inject, PLATFORM_ID, signal } from '@angular/core'; 
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
@@ -21,16 +21,21 @@ export class SpotifyAuthService {
   private platformId = inject(PLATFORM_ID);
 
   private readonly clientId = '25700f357a5d461586530408a940333d';
-  private readonly redirectUri = 'http://127.0.0.1:4200/callback';
   
-  // UPDATED: Added ugc-image-upload, playlist-modify-public, and playlist-modify-private to permissions scope
   private readonly scopes = 'user-read-private user-read-email user-modify-playback-state playlist-read-private playlist-modify-public playlist-modify-private ugc-image-upload user-read-playback-state';
 
-  // 1. Tracks whether a refresh network call is already running
   private activeRefreshPromise: Promise<string | null> | null = null;
 
-  // 2. Reactive signal tracking login state for your template buttons
   public isLoggedIn = signal<boolean>(this.checkInitialLoginStatus());
+
+  // --- DYNAMIC REDIRECT URI GETTER ---
+  // This cleans up both naming bugs and handles localhost vs production environments safely.
+  private get redirectUri(): string {
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}/callback`;
+    }
+    return 'http://localhost:4200/callback';
+  }
 
   // --- PUBLIC API ---
 
@@ -47,7 +52,7 @@ export class SpotifyAuthService {
       scope: this.scopes,
       code_challenge_method: 'S256',
       code_challenge: codeChallenge,
-      redirect_uri: this.redirectUri,
+      redirect_uri: this.redirectUri, // FIX: Removed () and matched property name
     };
 
     authUrl.search = new URLSearchParams(params).toString();
@@ -64,7 +69,7 @@ export class SpotifyAuthService {
       .set('client_id', this.clientId)
       .set('grant_type', 'authorization_code')
       .set('code', code)
-      .set('redirect_uri', this.redirectUri)
+      .set('redirect_uri', this.redirectUri) // FIX: Now correctly points to the renamed getter
       .set('code_verifier', codeVerifier);
 
     const headers = new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' });
@@ -82,14 +87,9 @@ export class SpotifyAuthService {
     }
   }
 
-  /**
-   * Request a fresh access token using the refresh token.
-   * Safe against multiple parallel triggers.
-   */
   async refreshToken(): Promise<string | null> {
     if (!isPlatformBrowser(this.platformId)) return null;
 
-    // If a refresh request is already flying, hand back that exact same promise
     if (this.activeRefreshPromise) {
       return this.activeRefreshPromise;
     }
@@ -107,18 +107,17 @@ export class SpotifyAuthService {
 
     const headers = new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' });
 
-    // Deduplicate calls by saving this running thread
     this.activeRefreshPromise = lastValueFrom(
       this.http.post<SpotifyTokenResponse>('https://accounts.spotify.com/api/token', payload.toString(), { headers })
     ).then(
       (response) => {
         this.saveTokens(response);
-        this.activeRefreshPromise = null; // Reset tracker on success
+        this.activeRefreshPromise = null;
         return response.access_token;
       },
       (error) => {
         console.error('Failed to refresh token, logging out:', error);
-        this.activeRefreshPromise = null; // Reset tracker on failure
+        this.activeRefreshPromise = null;
         this.logout();
         return null;
       }
@@ -127,9 +126,6 @@ export class SpotifyAuthService {
     return this.activeRefreshPromise;
   }
 
-  /**
-   * Validates state and forces automatic refresh flows if necessary.
-   */
   async getValidToken(): Promise<string | null> {
     if (!isPlatformBrowser(this.platformId)) return null;
 
@@ -146,9 +142,7 @@ export class SpotifyAuthService {
     localStorage.removeItem('spotify_token_expires_at');
     localStorage.removeItem('spotify_cached_devices');
     
-    // Notify your components that the user is officially out
     this.isLoggedIn.set(false);
-    
     this.router.navigate(['/login']);
   }
 
@@ -162,7 +156,7 @@ export class SpotifyAuthService {
   private isTokenExpired(): boolean {
     const expiresAt = localStorage.getItem('spotify_token_expires_at');
     if (!expiresAt) return true;
-    return Date.now() > (Number(expiresAt) - 60000); // 60-second cushion
+    return Date.now() > (Number(expiresAt) - 60000);
   }
 
   private saveTokens(tokens: SpotifyTokenResponse): void {
@@ -175,7 +169,6 @@ export class SpotifyAuthService {
       localStorage.setItem('spotify_refresh_token', tokens.refresh_token);
     }
 
-    // Instantly changes the visibility status of UI elements
     this.isLoggedIn.set(true);
   }
 

@@ -1,100 +1,147 @@
-@if (!authService.isLoggedIn()) {
-  <div class="auth-container">
-    <button (click)="login()">Log In with Spotify</button>
-  </div>
-} @else {
-  <div class="auth-container">
-    <button (click)="logout()">Log Out</button>
-  </div>
+<div class="dashboard-container">
   
-  @if (selectedPlaylists.length > 0) {
-    <div class="result">
-      <div style="margin-bottom: 12px; display: flex; gap: 10px;">
-        <button class="save-mix-btn" type="button" (click)="saveCurrentPlaylist()" title="Export Blend Copy">
-          💾 Save Mix to Spotify
-        </button>
+  <!-- LEFT COLUMN: STREAMLINED CONFIGURATION SIDEBAR -->
+  <aside class="sidebar-controls">
+    
+    <header class="app-branding">
+      <h2>Playlist Blender</h2>
+      <!-- Retained the logged-in status design you liked -->
+      <div class="user-status-area">
+        @if (!authService.isLoggedIn()) {
+          <button class="btn-primary login-btn" (click)="login()">Log In with Spotify</button>
+        } @else {
+          <div class="user-status-row">
+            <span class="online-indicator">● Logged In</span>
+            <button class="btn-text-link" (click)="logout()">Log Out</button>
+          </div>
+        }
       </div>
+    </header>
 
-      <form [formGroup]="homeForm" class="pinned-playlists-list">
-        @for (playlist of selectedPlaylists; track playlist.id) {
-          <div class="playlist-card">
-            <button class="listing" (click)="pinPlaylist(playlist)">
-              <app-playlist-tile class="pinned" [playlist]="playlist"></app-playlist-tile>
-            </button>
-            <div class="ratio-container">
-              <p>Ratio</p>
-              <input type="number" (click)="$event.stopPropagation()" [formControlName]="playlist.id" min=1/>
+    @if (authService.isLoggedIn()) {
+      <!-- Filter Utility Input Box -->
+      <section class="control-card search-wrapper">
+        <label for="playlist-search" class="section-label">Find New Targets</label>
+        <input 
+          id="playlist-search"
+          #queryInput
+          type="text" 
+          placeholder="Search public playlists..." 
+          class="compact-search-input"
+          (input)="searchPlaylists(queryInput.value)"
+        />
+      </section>
+
+      <!-- Balanced Ratio Sliders Form Row Configs -->
+      <form [formGroup]="homeForm" class="sidebar-form-scroller">
+        @if (selectedPlaylists.length > 0) {
+          <div class="control-card selected-mixers-section">
+            <label class="section-label">Active Blend Ratios</label>
+            <div class="selected-ratios-list">
+              @for (playlist of selectedPlaylists; track playlist.id) {
+                <div class="ratio-mixing-strip">
+                  <span class="playlist-mini-title">{{ playlist.name }}</span>
+                  <div class="slider-group">
+                    <input 
+                      type="range" 
+                      min="1" 
+                      max="10" 
+                      step="1" 
+                      [formControlName]="playlist.id" 
+                    />
+                    <span class="ratio-badge">x{{ homeForm.get(playlist.id)?.value }}</span>
+                  </div>
+                </div>
+              }
             </div>
           </div>
-        } 
+        }
       </form>
-    </div>
 
-    <div class="control-panel">
-      <div class="playback-bar">
-        
-        <div class="select-wrapper">
-          <select [value]="selectedDevice?.id" (change)="onDeviceChange($event)">
-            <option value="" disabled [selected]="!selectedDevice">Select Device</option>
+      <!-- Cleaned-up Footer Action Cluster -->
+      <footer class="sidebar-actions">
+        <!-- Integrated Playback Output selector down here next to transport engines -->
+        <div class="device-routing-block">
+          <select id="device-select" class="compact-select" (change)="onDeviceChange($event)">
+            @if (devices.length === 0) {
+              <option value="">No playback devices found</option>
+            }
             @for (device of devices; track device.id) {
-              <option [value]="device.id">
-                {{ device.name }} {{ device.is_active ? '●' : '' }}
+              <option [value]="device.id" [selected]="device.id === selectedDevice?.id">
+                {{ device.name }}
               </option>
             }
           </select>
+          <button class="btn-refresh-icon" title="Refresh Devices" (click)="loadDevices(true)">🔄</button>
         </div>
 
-        <button class="refresh-btn" type="button" (click)="loadDevices(true)" title="Refresh Devices">
-          <span>↻</span> Sync
-        </button>
-
-        <div class="transport-controls">
-          <button class="skip-btn" (click)="prevTrack()" [disabled]="!getActiveDevice() || isLoading" title="Previous Track">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="skip-icon">
-              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
-            </svg>
-          </button>
-
-          <!-- Play Button dynamically shows a loader spinner if isLoading is active -->
-          <button class="play-btn" (click)="play()" [disabled]="!selectedDevice || isLoading" title="Play Blended Playlist">
+        <div class="playback-transport-strip">
+          <button class="btn-transport" title="Previous Track" [disabled]="isLoading" (click)="prevTrack()"><</button>
+          <button class="btn-transport main-play" title="Play Blend" [disabled]="isLoading || selectedPlaylists.length === 0" (click)="play()">
             @if (isLoading) {
-              <div class="btn-spinner"></div>
+              <span class="spinning-loader"></span>
             } @else {
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="play-icon">
-                <path d="M8 5v14l11-7z"/>
-              </svg>
+              Play Blend
             }
           </button>
-
-          <button class="pause-btn" (click)="pause()" [disabled]="!getActiveDevice() || isLoading" title="Pause Active Device">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="pause-icon">
-              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-            </svg>
-          </button>
-
-          <button class="skip-btn" (click)="nextTrack()" [disabled]="!getActiveDevice() || isLoading" title="Next Track">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="skip-icon">
-              <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
-            </svg>
-          </button>
+          <button class="btn-transport" title="Pause Stream" [disabled]="isLoading" (click)="pause()">||</button>
+          <button class="btn-transport" title="Next Track" [disabled]="isLoading" (click)="nextTrack()">></button>
         </div>
 
-      </div>
-    </div>
-  }
-
-  <div class="search-container">
-    <input type="text" placeholder="Search Playlists" #filter (keyup.enter)="searchPlaylists(filter.value)" />
-    <button class="primary" type="button" (click)="searchPlaylists(filter.value)">Search</button>
-  </div>
-
-  <div class="results-grid">
-    @for (playlist of searchedPlaylists; track playlist.id) {
-      @if (!playlist.isSelected) {
-        <button class="listing" (click)="pinPlaylist(playlist)">
-          <app-playlist-tile class="listing" [playlist]="playlist"></app-playlist-tile>
+        <button 
+          class="btn-secondary-save" 
+          [disabled]="isLoading || selectedPlaylists.length === 0"
+          (click)="saveCurrentPlaylist()">
+          Export Merged Playlist
         </button>
+      </footer>
+    }
+  </aside>
+
+  <!-- RIGHT COLUMN: MODERATE COMPACT GRID SELECTION WORKSPACE -->
+  <main class="workspace-content">
+    @if (!authService.isLoggedIn()) {
+      <div class="empty-state">
+        <div class="empty-icon">🎵</div>
+        <h3>Playlist Blender Workspace</h3>
+        <p>Log in using the left profile column control deck options to manage dashboard layout arrays.</p>
+      </div>
+    } @else {
+      <!-- Pinned Sources Shelf -->
+      @if (selectedPlaylists.length > 0) {
+        <section class="workspace-shelf">
+          <h3 class="shelf-heading">Active Pipeline Sources</h3>
+          <div class="tile-grid">
+            @for (playlist of selectedPlaylists; track playlist.id) {
+              <div class="tile-wrapper selected" (click)="pinPlaylist(playlist)">
+                <app-playlist-tile [playlist]="playlist"></app-playlist-tile>
+                <div class="pinned-checkmark-indicator">✓</div>
+              </div>
+            }
+          </div>
+        </section>
       }
-    } 
-  </div>
-}
+
+      <!-- Dynamic Search Result Shelf -->
+      <section class="workspace-shelf">
+        <h3 class="shelf-heading">
+          {{ searchedPlaylists.length > 0 ? 'Search Results Stream' : 'Discovery Base' }}
+        </h3>
+        
+        @if (searchedPlaylists.length === 0) {
+          <div class="empty-shelf-prompt">
+            <p>Use the search utility field on the left sidebar profile to load public Spotify tracks and layouts.</p>
+          </div>
+        } @else {
+          <div class="tile-grid">
+            @for (playlist of searchedPlaylists; track playlist.id) {
+              <div class="tile-wrapper" [class.selected]="selectedPlaylists.includes(playlist)" (click)="pinPlaylist(playlist)">
+                <app-playlist-tile [playlist]="playlist"></app-playlist-tile>
+              </div>
+            }
+          </div>
+        }
+      </section>
+    }
+  </main>
+</div>
