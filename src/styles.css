@@ -1,52 +1,147 @@
-/* You can add global styles to this file, and also import other style files */
-/* src/styles.css */
+/* --- 1. DESIGN VARIABLES & BASE RESET --- */
+:root {
+  --bg-main: #0f172a;
+  --bg-surface: #1e293b;
+  --bg-surface-dark: #0c0c0c;
+  --border-color: #334155;
+  --border-color-light: #475569;
+  
+  --text-primary: #f8fafc;
+  --text-muted: #94a3b8;
+  
+  --accent-blue: #3b82f6;
+  --accent-blue-hover: #60a5fa;
+  --accent-blue-active: #2563eb;
+}
 
 html, body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background-color: #0f172a; /* Updated to Midnight Cobalt base */
-  color: #f8fafc;           /* Global default white text color */
+  background-color: var(--bg-main);
+  color: var(--text-primary);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* src/styles.css */
-
-/* --- GLOBAL BUTTON UTILITIES --- */
+/* --- 2. GLOBAL UTILITY BUTTONS --- */
 .spotify-btn {
-  background-color: #3b82f6; /* Cobalt Blue */
+  background-color: var(--accent-blue);
   color: #ffffff;
   font-weight: 700;
   font-size: 14px;
   padding: 12px 24px;
   border: none;
-  border-radius: 50px; /* Pill Shape */
+  border-radius: 50px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s ease, transform 0.1s ease;
 }
+.spotify-btn:hover { background-color: var(--accent-blue-hover); transform: scale(1.04); }
+.spotify-btn:active { transform: scale(0.98); }
 
-/* Hover & Active States apply universally */
-.spotify-btn:hover {
-  background-color: #60a5fa; /* Lighter bright blue */
-  transform: scale(1.04);
-}
-
-.spotify-btn:active {
-  transform: scale(0.98);
-}
-
-/* Secondary Button variant style option (e.g., Cancel / Back buttons) */
 .spotify-btn-secondary {
   background-color: transparent;
-  color: #f8fafc;
-  border: 1px solid #475569;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color-light);
 }
-
 .spotify-btn-secondary:hover {
-  border-color: #f8fafc;
+  border-color: var(--text-primary);
   background-color: rgba(255, 255, 255, 0.1);
   transform: scale(1.04);
 }
+
+/* Slimmed down Primary Button (Login, etc.) */
+.btn-primary.login-btn {
+  background-color: var(--accent-blue);
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.85rem;
+  margin-top: 10px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+.btn-primary.login-btn:hover { background-color: var(--accent-blue-hover); }
+.btn-primary.login-btn:active { background-color: var(--accent-blue-active); }
+
+/* --- 3. REUSABLE UI INPUTS & CONTROLS --- */
+.compact-search-input {
+  width: 100%;
+  padding: 10px 12px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.85rem;
+  box-sizing: border-box;
+}
+
+.compact-select {
+  flex: 1;
+  padding: 10px;
+  background-color: var(--bg-main);
+  color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.82rem;
+}
+
+/* Range Slider Styles */
+.slider-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.slider-group input[type="range"] {
+  flex: 1;
+  accent-color: var(--accent-blue);
+  height: 6px;
+  cursor: pointer;
+  background: var(--border-color-light);
+  border-radius: 3px;
+}
+.slider-group input[type="range"]::-webkit-slider-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+  transition: transform 0.1s ease, background-color 0.1s ease;
+}
+.slider-group input[type="range"]:hover::-webkit-slider-thumb {
+  transform: scale(1.2);
+  background: var(--accent-blue-hover);
+}
+
+/* --- 4. GLOBAL SCROLLBARS & UTILITIES --- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-color-light);
+}
+
+.spinning-loader {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: spin-clockwise 0.8s linear infinite;
+  display: inline-block;
+}
+@keyframes spin-clockwise { to { transform: rotate(360deg); } }
